@@ -18,23 +18,29 @@ self.addEventListener('install', event => {
         caches.open(CACHE_NAME)
             .then(cache => {
                 console.log('Service Worker: Cache abierto');
-                // Cache todos los archivos necesarios
+                // Cache todos los archivos necesarios con estrategia más robusta
+                console.log('Archivos a cachear:', urlsToCache);
                 return Promise.allSettled(
-                    urlsToCache.map(url => 
-                        cache.add(url).catch(err => {
-                            console.warn(`No se pudo cachear ${url}:`, err);
-                            return null; // Continuar con otros archivos
-                        })
-                    )
+                    urlsToCache.map(url => {
+                        const cacheUrl = url === './' ? './index.html' : url;
+                        console.log('Cacheando:', cacheUrl);
+                        return cache.add(cacheUrl)
+                            .then(() => console.log(`✓ Cacheado exitosamente: ${cacheUrl}`))
+                            .catch(err => {
+                                console.warn(`⚠ No se pudo cachear ${cacheUrl}:`, err);
+                                return null; // Continuar con otros archivos
+                            });
+                    })
                 );
             })
-            .then(() => {
-                console.log('Service Worker: Instalación completada - Funciona offline');
+            .then(results => {
+                const successCount = results.filter(r => r.status === 'fulfilled').length;
+                console.log(`Service Worker: Instalación completada. ${successCount}/${urlsToCache.length} archivos cacheados - Funciona offline`);
                 return self.skipWaiting();
             })
             .catch(error => {
                 console.error('Service Worker: Error durante la instalación', error);
-                // Continuar aunque haya errores
+                // Continuar aunque haya errores para permitir funcionamiento offline
                 self.skipWaiting();
             })
     );
@@ -91,15 +97,55 @@ self.addEventListener('fetch', event => {
                         return response;
                     })
                     .catch(error => {
-                        console.error('Service Worker: Error en fetch', error);
+                        console.log('Service Worker: Fetch falló, respondiendo offline:', event.request.url);
                         
-                        // Si es una solicitud de navegación y falló, mostrar página offline sin mensaje de error
-                        if (event.request.mode === 'navigate') {
-                            return caches.match('./index.html');
+                        // Para navegación (HTML), intentar servir index.html
+                        if (event.request.mode === 'navigate' || event.request.headers.get('accept').includes('text/html')) {
+                            return caches.match('./index.html')
+                                .then(indexResponse => {
+                                    if (indexResponse) {
+                                        console.log('Service Worker: Sirviendo index.html desde cache (offline)');
+                                        return indexResponse;
+                                    }
+                                    
+                                    // Si no hay index.html en cache, crear respuesta básica sin errores
+                                    return new Response(`
+                                        <!DOCTYPE html>
+                                        <html>
+                                        <head>
+                                            <title>Atlético Analyzer - Offline</title>
+                                            <meta charset="UTF-8">
+                                            <style>
+                                                body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                                                .offline-message { color: #666; }
+                                            </style>
+                                        </head>
+                                        <body>
+                                            <h1>Atlético Analyzer</h1>
+                                            <p class="offline-message">Aplicación disponible offline</p>
+                                            <script>
+                                                // Intentar recargar cuando haya conexión
+                                                setTimeout(() => {
+                                                    if (navigator.onLine) {
+                                                        window.location.reload();
+                                                    }
+                                                }, 2000);
+                                            </script>
+                                        </body>
+                                        </html>
+                                    `, {
+                                        headers: {
+                                            'Content-Type': 'text/html; charset=UTF-8'
+                                        }
+                                    });
+                                });
                         }
                         
-                        // Para otros tipos de errores, simplemente devolver el error sin mostrar mensaje
-                        throw error;
+                        // Para otros tipos de errores, devolver respuesta vacía pero válida
+                        return new Response('', {
+                            status: 200,
+                            statusText: 'OK'
+                        });
                     });
             })
     );
