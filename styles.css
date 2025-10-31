@@ -38,6 +38,31 @@
     --text-secondary: #6c757d;
 }
 
+/* Fuentes locales para funcionalidad offline */
+@font-face {
+    font-family: 'Orbitron';
+    src: url('fonts/Orbitron-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Orbitron';
+    src: url('fonts/Orbitron-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Orbitron';
+    src: url('fonts/Orbitron-Black.woff2') format('woff2');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* Hero Header con escudo y degradado */
 .hero-header {
     position: relative;
@@ -1943,4 +1968,195 @@ body {
 .goal-ball-icon:hover {
     transform: scale(1.2);
     color: #333333;
+}
+/* ========================================== */
+/* ICONOS SVG LOCALES - NUEVO CSS AÑADIDO    */
+/* ========================================== */
+
+/* Clase principal para todos los iconos SVG */
+.icon-svg {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+    fill: currentColor;
+}
+
+/* Iconos en el título de la app (más grandes) */
+.app-title .icon-svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+/* Iconos en labels y títulos (medianos) */
+label .icon-svg,
+h3 .icon-svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+}
+
+/* Iconos en botones de control (medianos) */
+.control-btn .icon-svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+/* Iconos en botones de pestañas */
+.tab-btn .icon-svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+/* Iconos de jugadores */
+.player-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+/* Iconos específicos para diferentes tamaños */
+.icon-small {
+    width: 12px;
+    height: 12px;
+}
+
+.icon-medium {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-large {
+    width: 20px;
+    height: 20px;
+}
+
+/* Iconos en modales */
+.modal .icon-svg {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* Iconos en formularios */
+.form-field .icon-svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+/* Efectos hover para botones con iconos */
+.control-btn:hover .icon-svg,
+.tab-btn:hover .icon-svg,
+.goal-btn:hover .icon-svg {
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+/* Iconos con colores personalizados según el contexto */
+.control-btn.start .icon-svg {
+    color: #22c55e; /* Verde para start/play */
+}
+
+.control-btn.pause .icon-svg {
+    color: #f59e0b; /* Amarillo para pause */
+}
+
+.control-btn.end .icon-svg {
+    color: #ef4444; /* Rojo para end/stop */
+}
+
+.control-btn.export .icon-svg {
+    color: #3b82f6; /* Azul para export */
+}
+
+.control-btn.save .icon-svg {
+    color: #8b5cf6; /* Púrpura para save */
+}
+
+.control-btn.load .icon-svg {
+    color: #06b6d4; /* Cyan para load */
+}
+
+.control-btn.new .icon-svg {
+    color: #10b981; /* Emerald para new */
+}
+
+/* Iconos para objetivos/goles */
+.target-icon .icon-svg {
+    color: #dc2626; /* Rojo para goles */
+}
+
+/* Ajustes responsivos para iconos en móviles */
+@media (max-width: 768px) {
+    .icon-svg {
+        width: 14px;
+        height: 14px;
+        margin-right: 4px;
+    }
+    
+    .app-title .icon-svg {
+        width: 18px;
+        height: 18px;
+        margin-right: 6px;
+    }
+    
+    .control-btn .icon-svg {
+        width: 12px;
+        height: 12px;
+        margin-right: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .icon-svg {
+        width: 12px;
+        height: 12px;
+        margin-right: 3px;
+    }
+    
+    .app-title .icon-svg {
+        width: 16px;
+        height: 16px;
+        margin-right: 5px;
+    }
+    
+    .control-btn .icon-svg {
+        width: 11px;
+        height: 11px;
+        margin-right: 3px;
+    }
+}
+
+/* Animaciones sutiles para iconos */
+.icon-svg {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.control-btn:active .icon-svg,
+.tab-btn:active .icon-svg,
+.goal-btn:active .icon-svg {
+    transform: scale(0.95);
+}
+
+/* Estados de iconos cuando están deshabilitados */
+.control-btn:disabled .icon-svg,
+.tab-btn.disabled .icon-svg {
+    opacity: 0.5;
+    filter: grayscale(50%);
+}
+
+/* Asegurar que los iconos se alineen correctamente */
+.icon-svg + * {
+    vertical-align: middle;
 }

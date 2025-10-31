@@ -185,51 +185,6 @@ class MatchAnalyzer {
     }
 
     // Método para prevenir reinicios accidentales sin pausar el cronómetro
-    // Método para guardar el estado actual del match
-    saveCurrentMatchState() {
-        const currentState = {
-            matchData: JSON.parse(JSON.stringify(this.matchData)),
-            players: JSON.parse(JSON.stringify(this.players)),
-            selectedPlayer: this.selectedPlayer ? JSON.parse(JSON.stringify(this.selectedPlayer)) : null,
-            timerInterval: this.timerInterval,
-            timestamp: Date.now()
-        };
-        localStorage.setItem('current_match_state', JSON.stringify(currentState));
-        console.log('✓ Estado del match guardado para Samsung diagonal button');
-    }
-
-    // Método para restaurar el estado actual del match
-    restoreCurrentMatchState() {
-        try {
-            const savedState = localStorage.getItem('current_match_state');
-            if (!savedState) {
-                console.log('No hay estado guardado para restaurar');
-                return;
-            }
-            
-            const currentState = JSON.parse(savedState);
-            
-            // Restaurar matchData
-            if (currentState.matchData) {
-                this.matchData = currentState.matchData;
-            }
-            
-            // Restaurar jugadores
-            if (currentState.players) {
-                this.players = currentState.players;
-            }
-            
-            // Restaurar jugador seleccionado
-            if (currentState.selectedPlayer) {
-                this.selectedPlayer = currentState.selectedPlayer;
-            }
-            
-            console.log('✓ Estado del match restaurado - Samsung diagonal button fix aplicado');
-        } catch (error) {
-            console.error('Error al restaurar estado del match:', error);
-        }
-    }
-
     setupVisibilityHandlers() {
         // Prevenir recargas accidentales durante partidos activos
         window.addEventListener('beforeunload', (e) => {
@@ -240,20 +195,18 @@ class MatchAnalyzer {
             }
         });
 
-        // Handler robusto para cambios de visibilidad (minimizar/maximizar tablet, botón Samsung)
+        // Handler robusto para cambios de visibilidad (minimizar/maximizar tablet)
         document.addEventListener('visibilitychange', () => {
             console.log('Cambio de visibilidad detectado:', document.hidden ? 'OCULTA' : 'VISIBLE');
             
             if (document.hidden) {
-                // Página se va a ocultar (minimizar) - cualquier forma
+                // Página se va a ocultar (minimizar)
                 console.log('Guardando estado antes de minimizar...');
-                this.saveCurrentMatchState(); // Usar método específico para Samsung diagonal
+                this.saveMatchData();
+                this.savePlayersToStorage();
             } else {
-                // Página vuelve a ser visible (maximizar/restaurar) - cualquier forma
+                // Página vuelve a ser visible (maximizar/restaurar)
                 console.log('Restaurando estado después de maximizar...');
-                
-                // CRÍTICO: Primero restaurar estado completo del match
-                this.restoreCurrentMatchState();
                 
                 // Actualizar cronómetro inmediatamente
                 if (this.matchData && this.matchData.isRunning) {
@@ -263,6 +216,7 @@ class MatchAnalyzer {
                 
                 // Restaurar estado de jugadores y re-renderizar
                 setTimeout(() => {
+                    this.loadPlayersFromStorage();
                     this.renderPlayers();
                     console.log('✓ Jugadores renderizados');
                 }, 100);
@@ -279,13 +233,7 @@ class MatchAnalyzer {
                     console.log('✓ Campo re-renderizado');
                 }, 300);
                 
-                // Restaurar cronología de eventos - CRÍTICO para Samsung diagonal
-                setTimeout(() => {
-                    this.updateTimelineDisplay();
-                    console.log('✓ Cronología actualizada - Samsung diagonal button FIXED');
-                }, 400);
-                
-                console.log('Estado completo restaurado después de maximizar - Samsung diagonal button');
+                console.log('Estado completo restaurado después de maximizar');
             }
         });
     }
@@ -507,10 +455,24 @@ class MatchAnalyzer {
 
     newMatch() {
         if (confirm('¿Estás seguro de que quieres iniciar un nuevo partido? Se perderán todos los datos del partido actual.')) {
-            // SOLUCIÓN 1: Limpiar localStorage para eliminar caché de partidos anteriores
-            console.log('Limpiando localStorage para nuevo partido...');
+            // CORRECCIÓN: Limpieza selectiva para mantener historial de partidos guardados
+            console.log('Limpiando datos del partido anterior...');
+            
+            // SOLUCIÓN MEJORADA: Limpiar solo los datos del partido actual
+            // NO tocar historial de partidos guardados ni base de jugadores
+            const savedMatches = localStorage.getItem('atletico_base_matches');
+            const savedPlayers = localStorage.getItem('atletico_base_players');
+            const savedFollowups = localStorage.getItem('atletico_followups');
+            
+            // Limpiar todo
             localStorage.clear();
-            console.log('✓ localStorage limpiado - No habrá datos residuales de goles/tarjetas');
+            
+            // Restaurar datos importantes (NO el historial del partido anterior)
+            if (savedPlayers) localStorage.setItem('atletico_base_players', savedPlayers);
+            if (savedMatches) localStorage.setItem('atletico_base_matches', savedMatches);
+            if (savedFollowups) localStorage.setItem('atletico_followups', savedFollowups);
+            
+            console.log('✓ Datos del partido anterior limpiados - Historial preservado');
             
             // Reset de datos del partido
             this.matchData = {
